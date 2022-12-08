@@ -1,65 +1,252 @@
- SqlConnection con = new SqlConnection("");
-    protected void Button1_Click(object sender, EventArgs e)
-    {
-        
-        con.Open();
-        SqlCommand comm = new SqlCommand("Insert into student values('"+int.Parse(TextBox1.Text)+ "','" + TextBox1.Text+ "','" +DropDownList1.SelectedValue+ "','" + "',)",con);
-        comm.ExecuteNonQuery();
-        con.Close();
-        ScriptManager.RegisterStartupScript(this, this.GetType(), "script", "alert('successfully Inserted')",true);
-        LoadRecord();
-    }
-    void LoadRecord()
-    {
-        SqlCommand comm = new SqlCommand("select * from student,)", con);
-        SqlDataAdapter d = new SqlDataAdapter(comm);
-        DataTable dt = new DataTable();
-        d.Fill(dt);
-        GridView1.DataSource = dt;
-        GridView1.DataBind();
+migration(pictures)
 
-    }
 
-    protected void Button2_Click(object sender, EventArgs e)
-    {
-        con.Open();
-        SqlCommand comm = new SqlCommand("update student set StudentName='"+TextBox2.Text+ "',Address='" + TextBox2.Text + "',StudentName='" + TextBox2.Text + "' where StudentID ='"+int.Parse(TextBox1.Text)+"'",con);
-        comm.ExecuteNonQuery();
-        con.Close();
-        ScriptManager.RegisterStartupScript(this, this.GetType(), "script", "alert('successfully Updated')", true);
-        LoadRecord();
-    }
+		$table->string('image');
+            $table->string('name');
+            $table->string('detail');
 
-    protected void Button3_Click(object sender, EventArgs e)
+============================================
+
+mycontroller
+
+<?php
+
+namespace App\Http\Controllers;
+
+use Illuminate\Http\Request;
+use Illuminate\Support\facades\DB;
+
+class mycontroller extends Controller
+{
+    /**
+     * Display a listing of the resource.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function index()
     {
-        con.Open();
-        SqlCommand comm = new SqlCommand("Delete student where StudentID ='" + int.Parse(TextBox1.Text) + "'", con);
-        comm.ExecuteNonQuery();
-        con.Close();
-        ScriptManager.RegisterStartupScript(this, this.GetType(), "script", "alert('successfully Deleted')", true);
-        LoadRecord();
+        $practice = DB::table('pictures')->get();
+        return \view('welcome',['pictures'=>$practice]);
     }
 
-    protected void Button4_Click(object sender, EventArgs e)
+    /**
+     * Show the form for creating a new resource.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function create(Request $request)
     {
-        SqlCommand comm = new SqlCommand("select * from student where StudentID ='" + int.Parse(TextBox1.Text) + "'", con);
-        SqlDataAdapter d = new SqlDataAdapter(comm);
-        DataTable dt = new DataTable();
-        d.Fill(dt);
-        GridView1.DataSource = dt;
-        GridView1.DataBind();
+        DB::table('pictures')->insert([
+            'image'=>$request->image,
+            'name'=>$request->name,
+            'detail'=>$request->detail,
+        ]);
+        return \redirect(\route('index'));
     }
 
-    protected void Button5_Click(object sender, EventArgs e)
+    /**
+     * Store a newly created resource in storage.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Response
+     */
+    public function store(Request $request)
     {
-        con.Open();
-        SqlCommand comm = new SqlCommand("select * from student where StudentID ='" + int.Parse(TextBox1.Text) + "'", con);
-        SqlDataReader r = comm.ExecuteReader();
-        while(r.Read())
-        {
-            TextBox2.Text = r.GetValue(1).ToString();
-            DropDownList1.SelectedValue = r.GetValue(2).ToString();
-            TextBox2.Text = r.GetValue(1).ToString();
-            TextBox2.Text = r.GetValue(1).ToString();
-        }
+        //
     }
+
+    /**
+     * Display the specified resource.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function show($id)
+    {
+        //
+    }
+
+    /**
+     * Show the form for editing the specified resource.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function edit($id)
+    {
+        $practices = DB::table('pictures')->find($id);
+        return \view('editform',['practices'=>$practices]);
+    }
+
+    /**
+     * Update the specified resource in storage.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function update(Request $request, $id)
+    {
+        DB::table('pictures')->where('id',$id)->update([
+            'image'=>$request->image,
+            'name'=>$request->name,
+            'detail'=>$request->detail,
+        ]);
+        return \redirect(\route('index'));
+    }
+
+    /**
+     * Remove the specified resource from storage.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function destroy($id)
+    {
+        DB::table('pictures')->where('id',$id)->delete();
+        return \redirect(\route('index'));
+    }
+}
+
+===========================================================
+===========================================================
+
+web.php(routes)
+
+<?php
+
+use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\mycontroller;
+
+
+
+Route::get('/',[mycontroller::class,'index'])->name('index');
+Route::post('/',[mycontroller::class,'create'])->name('create');
+
+Route::get('/edit/{id}',[mycontroller::class,'edit'])->name('edit');
+Route::post('/edit/{id}',[mycontroller::class,'update'])->name('update');
+
+Route::get('/delete/{id}',[mycontroller::class,'destroy'])->name('destroy');
+
+
+============================================================================
+
+welcome.php
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+     <!-- CSS only -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
+<!-- JavaScript Bundle with Popper -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-kenU1KFdBIe4zVF0s0G1M5b4hcpxyD9F7jL+jjXkk+Q2h455rYXK/7HAuoJl+0I4" crossorigin="anonymous"></script>
+
+    <title>GALARY SYSTEM</title>
+</head>
+<body>
+    <div class="container mt-5 ">
+        <div class="row">
+            <div class="col-sm-8">
+                <form action="" method="POST">
+                    @csrf
+                    <h3 class="">GALARY SYSTEM</h3>
+                    <div class="md-3">
+                        <label for="image" class="form-lable">Image</label>
+                        <input type="file" name="image" id="image" class="form-control"><br/>
+                    </div>
+                    <div class="md-3">
+                    <label for="image" class="form-lable">name</label>
+                        <input type="text" name="name" id="name" class="form-control"><br/>
+                    </div>
+                    <div class="md-3">
+                    <label for="image" class="form-lable">details</label>
+                        <input type="text" name="detail" id="detail" class="form-control"><br/>
+                    </div>
+                    <button type="submit" class="btn btn-info">Submit</button>
+                </form>
+            </div>
+        </div>
+        <div class="row">
+            <div class="container mt-5">
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th class="col">ID</th>
+                            <th class="col">IMAGE</th>
+                            <th class="col">NAME</th>
+                            <th class="col">DETAILs</th>
+                            <th class="col">ACTIONS</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach ($pictures as $pc)
+                            <tr>
+                                <th>{{$pc->id}}</th>
+                                <td><img src="{{asset('image/'.$pc->image)}}" width="150" height="100" ></td>
+                                <td>{{$pc->name}}</td>
+                                <td>{{$pc->detail}}</td>
+                                <td>
+                                    <a href="{{url('/edit',$pc->id)}}" class="btn btn-info">Edit</a>
+                                    <a href="{{url('/delete',$pc->id)}}" class="btn btn-danger">Delete</a>
+                                </td>
+                            </tr>
+                        
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+
+
+============================================================
+============================================================
+
+editform.blade.php
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+     <!-- CSS only -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
+<!-- JavaScript Bundle with Popper -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-kenU1KFdBIe4zVF0s0G1M5b4hcpxyD9F7jL+jjXkk+Q2h455rYXK/7HAuoJl+0I4" crossorigin="anonymous"></script>
+
+    <title>GALARY SYSTEM</title>
+</head>
+<body>
+    <div class="container mt-5 ">
+        <div class="row">
+            <div class="col-sm-8">
+                <form action="" method="POST">
+                    @csrf
+                    <h3 class="">GALARY SYSTEM</h3>
+                    <div class="md-3">
+                        <label for="image" class="form-lable">Image</label>
+                        <input type="file" name="image" id="image" class="form-control"><br/>
+                    </div>
+                    <div class="md-3">
+                    <label for="image" class="form-lable">name</label>
+                        <input type="text" name="name" id="name" class="form-control" value="{{$practices->name}}"><br/>
+                    </div>
+                    <div class="md-3">
+                    <label for="image" class="form-lable">details</label>
+                        <input type="text" name="detail" id="detail" class="form-control" value="{{$practices->name}}"><br/>
+                    </div>
+                    <button type="submit" class="btn btn-info">Submit</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
